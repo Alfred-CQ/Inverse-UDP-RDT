@@ -1,35 +1,57 @@
+# Compile Flags
 CC          = g++
-LD          = g++ 
-CFLAG       = -Wall -std=c++17
+LD          = g++
+CCFLAGS     = -Wall -Wextra -std=c++17
+OPT			= -O0
+DEPFLAGS    = -MP -MD
 
+# Programs
 PROG_CLIENT	= client
 PROG_SERVER = server
 
+# Folders
 SRC_DIR		= ./src
 BUILD_DIR	= ./build
 BIN_DIR     = ./bin
+INCLUDE_DIR	=. ./include
 
-SRC_LIST_CLIENT = $(wildcard $(SRC_DIR)/client.cpp)
-OBJ_LIST_CLIENT = $(BUILD_DIR)/$(notdir $(SRC_LIST_CLIENT:.cpp=.o))
+# CPP, Sources, Dependencies and Object files
+CPP_LIST_CLIENT = client.cpp
+SRC_LIST_CLIENT = $(patsubst %.cpp,$(SRC_DIR)/%.cpp,$(CPP_LIST_CLIENT))
+OBJ_LIST_CLIENT = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC_LIST_CLIENT))
+DEP_LIST_CLIENT = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.d,$(SRC_LIST_CLIENT))
 
-SRC_LIST_SERVER = $(wildcard $(SRC_DIR)/server.cpp)
-OBJ_LIST_SERVER = $(BUILD_DIR)/$(notdir $(SRC_LIST_SERVER:.cpp=.o))
+CPP_LIST_SERVER = server.cpp
+SRC_LIST_SERVER = $(patsubst %.cpp,$(SRC_DIR)/%.cpp,$(CPP_LIST_SERVER))
+OBJ_LIST_SERVER = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC_LIST_SERVER))
+DEP_LIST_SERVER = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.d,$(SRC_LIST_SERVER))
 
-.PHONY: all clean $(PROG_CLIENT) $(PROG_SERVER) compile_client compile_server
+INCLUDES = $(foreach dir, $(INCLUDE_DIR), $(addprefix -I, $(dir)))
+-include $(DEP_LIST_CLIENT)
+-include $(DEP_LIST_SERVER)
 
-all: $(PROG_CLIENT) $(PROG_SERVER)
+# Prettier Makefile
+NO_COLOR=$(shell printf "%b" "\033[0m")
+OK_COLOR=$(shell printf "%b" "\033[32;01m")
+OK_STRING=$(OK_COLOR)[OK]$(NO_COLOR)
 
-compile_client: 
-	$(CC) -c $(CFLAG) $(SRC_LIST_CLIENT) -o $(OBJ_LIST_CLIENT)
+.PHONY: all clean $(PROG_CLIENT) $(PROG_SERVER)
 
-compile_server: 
-	$(CC) -c $(CFLAG) $(SRC_LIST_SERVER) -o $(OBJ_LIST_SERVER)
+all: $(BIN_DIR)/$(PROG_CLIENT) $(BIN_DIR)/$(PROG_SERVER)
 
-$(PROG_CLIENT): compile_client
-	$(LD) $(OBJ_LIST_CLIENT) -o $(BIN_DIR)/$@
+$(BIN_DIR)/$(PROG_CLIENT): $(OBJ_LIST_CLIENT)
+	@echo "Linking the target $(PROG_CLIENT) in $(BIN_DIR)"
+	$(LD) -o $@ $^
+	@echo ""
 
-$(PROG_SERVER): compile_server
-	$(LD) $(OBJ_LIST_SERVER) -o $(BIN_DIR)/$@
+$(BIN_DIR)/$(PROG_SERVER): $(OBJ_LIST_SERVER)
+	@echo "Linking the target $(PROG_CLIENT) in $(BIN_DIR)"
+	$(LD) -o $@ $^
+	@echo ""
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
+	@echo "Compiling $< in $(BUILD_DIR) $(OK_STRING)"
+	@$(CC) $(CCFLAGS) -g $(INCLUDES) $(OPT) $(DEPFLAGS) -c -o $@ $<
 
 clean:
-	rm -f $(BIN_DIR)/$(PROG_CLIENT) $(BIN_DIR)/$(PROG_SERVER) $(BUILD_DIR)/*.o
+	rm -f $(BIN_DIR)/$(PROG_CLIENT) $(BIN_DIR)/$(PROG_SERVER) $(BUILD_DIR)/*.o $(BUILD_DIR)/*.d
