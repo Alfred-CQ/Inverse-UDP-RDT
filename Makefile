@@ -16,7 +16,7 @@ BIN_DIR     = ./bin
 INCLUDE_DIR	=. ./include
 
 # CPP, Sources, Dependencies and Object files
-CPP_LIST_CLIENT = client.cpp
+CPP_LIST_CLIENT = client.cpp clientUDP.cpp
 SRC_LIST_CLIENT = $(patsubst %.cpp,$(SRC_DIR)/%.cpp,$(CPP_LIST_CLIENT))
 OBJ_LIST_CLIENT = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC_LIST_CLIENT))
 DEP_LIST_CLIENT = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.d,$(SRC_LIST_CLIENT))
