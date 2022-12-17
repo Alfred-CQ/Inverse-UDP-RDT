@@ -1,5 +1,4 @@
 #include "../include/udp_server.h"
-#include "../include/message.h"
 #include "../include/utils.h"
 
 /* Constructors */
@@ -10,6 +9,8 @@ UDP_Server::UDP_Server(string _ip, uint _port)
     addr_len    = sizeof(struct sockaddr);
     recv_buffer = new char[REQUEST_NAME_SIZE];
     stream      = 0;
+    streams_status  = vector<bool>(NUMBER_STREAMS, true);
+    streams         = vector<Response*>(NUMBER_STREAMS, nullptr);
     
     if ((sockFD = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
     {
@@ -63,6 +64,9 @@ void UDP_Server::send_Response(string resource_name)
     response->set_Source(sockFD);
     response->set_Destination((SOCK_ADDR*)& client_addr);
 
+    streams[response->get_Stream()] = response;
+    streams_status[response->get_Stream()] = UNAVAILABLE;
+
     cout << "******************************************************\n"
          << " 📨 Sending resource " << resource_name << " in the stream "<< response->get_Stream() << endl;
 
@@ -91,6 +95,14 @@ void UDP_Server::send_Response(string resource_name)
     resource.close();
 }
 
+void UDP_Server::resend_Segment(string request)
+{
+    string srt_stream(request, 0, 1),
+           str_sequence_number(request, 1, 5);
+    
+    streams[atoi(srt_stream.c_str())]->send_Segment(atoi(str_sequence_number.c_str()));
+}
+
 // Receivers
 void UDP_Server::recv_Requests()
 {
@@ -105,15 +117,20 @@ void UDP_Server::recv_Requests()
 
         resource_name = string(recv_buffer, 2, atoi(size_Request));
 
-        if (find_Resource(resource_name))
+        if (atoi(size_Request))
         {
-            cout << " Resource " << resource_name << " found ✨ in " << resources_path << " 🗃\n";
-            thread(&UDP_Server::send_Response, this, resource_name).detach();
+            if (find_Resource(resource_name))
+            {
+                cout << " Resource " << resource_name << " found ✨ in " << resources_path << " 🗃\n";
+                thread(&UDP_Server::send_Response, this, resource_name).detach();
+            }
+            else
+                cout << " Resource " << resource_name << " not found 🚫\n";
         }
         else
-            cout << " Resource " << resource_name << " not found 🚫\n";
-
-        bytes_recv = 0;
+        {
+            resend_Segment(string(recv_buffer, 2, 6));
+        }
     }
 }
 

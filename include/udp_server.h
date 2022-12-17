@@ -2,6 +2,7 @@
     #define __UDP_SERVER__
 
     #include "main_header.h"
+    #include "message.h"
 
     class UDP_Server
     {
@@ -13,6 +14,7 @@
            /** Methods **/
            /* Senders */
             void send_Response      (string resource_name);
+            void resend_Segment     (string request);
 
            /* Receivers */
             void recv_Requests      ();
@@ -23,22 +25,26 @@
             
         private:
            /* Variables */
-            uint            port;
-            uint            stream;
+            uint                port;
+            uint                stream;
             
-            int             sockFD;
-            int             bytes_recv;
-            int             bytes_send;
+            int                 sockFD;
+            int                 bytes_recv;
+            int                 bytes_send;
 
-            string          ip;
-            string          current_path;
-            string          resources_path;
+            string              ip;
+            string              current_path;
+            string              resources_path;
 
-            SOCK_ADDR_IN    addr;
-            SOCK_ADDR_IN    client_addr;
-            socklen_t       addr_len;
+            SOCK_ADDR_IN        addr;
+            SOCK_ADDR_IN        client_addr;
+            socklen_t           addr_len;
 
-            char*           recv_buffer;
+            char*               recv_buffer;
+
+            vector<bool>        streams_status;
+            vector<Response*>   streams;
+            RESOURCES           resource_names;
     };
         
 #endif // !__UDP_SERVER__

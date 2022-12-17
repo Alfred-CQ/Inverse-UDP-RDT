@@ -51,12 +51,26 @@ void UDP_Client::send_Request(string resource_request)
     bytes_send = sendto(sockFD, &(request.front()), request.size(), 0, (SOCK_ADDR*)& server_addr, SOCK_ADDR_SIZE);
 }
 
+void UDP_Client::resend_Request(uint stream, uint sequence_number)
+{
+    cout << " ⚠️ Error in cheksum re-requesting segment " << sequence_number << " in stream " << stream << endl;
+
+    string resend_request = utils::complete_Bytes(0, 2) + 
+                            std::to_string(stream) +
+                            std::to_string(sequence_number);
+
+    sendto(sockFD, &(resend_request.front()), resend_request.size(), 0, (SOCK_ADDR*)& server_addr, SOCK_ADDR_SIZE);
+}
+
 // Receivers
 void UDP_Client::recv_Responses()
 {
     char ch_stream;
-    uint current_stream;    
+    uint current_stream;   
 
+    /***** Testing *******/
+    uint i = 0;
+    /*********************/
     while (1)
     {
         bytes_recv = recvfrom(sockFD, recv_buffer, MAX_MESSAGE_SIZE, MSG_WAITALL, (SOCK_ADDR *)& server_addr, &addr_len);
@@ -75,6 +89,9 @@ void UDP_Client::recv_Responses()
         // Data
         string data(recv_buffer, 14, MAX_DATA_SIZE);
 
+        // Checksum
+        string str_checksum(recv_buffer, MAX_DATA_SIZE + 14, 1);
+
         if (streams_status[current_stream] == AVAILABLE)
         {
             string number_segments(recv_buffer, 6, 5);
@@ -86,13 +103,31 @@ void UDP_Client::recv_Responses()
             streams_status[current_stream] = UNAVAILABLE;                                  
         }
 
-        streams[current_stream]->insert_Segment(atoi(&(sequence_number.front())), 
-                                                atoi(&(padding.front())), 
-                                                &(data.front()));
+        /***** Testing *******/
+        if (i == 0)
+            data[0] = '/'; data[1] = '-'; data[5] = '@';
+        /*********************/
+
+        if (utils::test_Checksum(data, atoi(&(str_checksum.front()))))
+        {
+            streams[current_stream]->insert_Segment(atoi(&(sequence_number.front())), 
+                                                    atoi(&(padding.front())), 
+                                                    &(data.front()));
+        }
+        else
+        {
+            resend_Request(streams[current_stream]->get_Stream(), atoi(sequence_number.c_str()));
+        }
 
         if (streams[current_stream]->get_Counter() == streams[current_stream]->get_Numb_Segments())
+        {
             streams[current_stream]->build_Response(REQUESTS_DIR);
+            streams_status[current_stream] = AVAILABLE;
+        }
 
+        /***** Testing *******/
+        i = (i + 1)%10;
+        /*********************/
     }
 }
 

@@ -14,6 +14,7 @@
            /** Methods **/
            /* Senders */
             void send_Request       (string resource_request);
+            void resend_Request     (uint stream, uint sequence_number);
 
            /* Receivers */
             void recv_Responses     ();
