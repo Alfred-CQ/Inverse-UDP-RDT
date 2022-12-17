@@ -1,27 +1,28 @@
-#include "../include/resources.h"
-#include "ClientUDP.h"
+#include "../include/main_header.h"
+#include "../include/udp_client.h"
 
 int main()
 {
-    ClientUDP client(5000);
+    UDP_Client* myClient { new UDP_Client("127.0.0.1", PORT) };
+
+    myClient->print_Information();
 
     while (1)
     {
-        cout << "Type Something (q or Q to quit): ";
-        fgets(client.send_data, 1024, stdin);
+        string message;
+        
+        cout << "Type Something (Q to quit): ";
+        getline(cin, message);
 
-        if ((strcmp(client.send_data, "q\n") == 0) || strcmp(client.send_data, "Q\n") == 0)
+        if ((message.size() == 0) || (message == "Q"))
             break;
 
-        client.n = sendto(client.sock, client.send_data, strlen(client.send_data), 0, (struct sockaddr *)&client.server_addr, sizeof(struct sockaddr));
+        myClient->send_Message(message);
 
-        cout << "Send to (" << client.n << ") bytes\n";
-
-        client.bytes_read = recvfrom(client.sock, client.recv_data, 1024, MSG_WAITALL, (struct sockaddr *)&client.server_addr, &client.addr_len);
-        client.recv_data[client.bytes_read] = '\0';
-
-        cout << "[ Msg Server ] " << client.recv_data << "\n\n";
+        myClient->recv_Response();
     }
+
+    cout << " 🏁 FINISH UDP CLIENT PROGRAM 🏁\n";
 
     return 0;
 }
