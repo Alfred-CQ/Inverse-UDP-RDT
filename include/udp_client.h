@@ -12,10 +12,10 @@
             
            /** Methods **/
            /* Senders */
-            void send_Message       (string message);
+            void send_Request       (string resource_request);
 
            /* Receivers */
-            void recv_Response      ();
+            void recv_Responses     ();
 
            /* Utilities */
             void print_Information  ();
@@ -25,14 +25,13 @@
             uint            port;
 
             int             sockFD;
-            int             bytes_recv;
             int             bytes_send;
             
             SOCK_ADDR_IN    server_addr;
             HOST*           host;
             socklen_t       addr_len;
 
-            char            recv_buffer[1024];
+            char*           recv_buffer;
     };
 
 #endif // !__UDP_CLIENT__

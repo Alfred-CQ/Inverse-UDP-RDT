@@ -1,4 +1,5 @@
 #include "../include/udp_client.h"
+#include "../include/utils.h"
 
 /* Constructors and Destructor */
 UDP_Client::UDP_Client(string _ip_server, uint _port)
@@ -27,21 +28,25 @@ UDP_Client::~UDP_Client()
 
 /* Methods */
 // Senders
-void UDP_Client::send_Message(string message)
+void UDP_Client::send_Request(string resource_request)
 {
-    bytes_send = sendto(sockFD, &(message.front()), message.size(), 0, (SOCK_ADDR*)& server_addr, SOCK_ADDR_SIZE);
+    if (resource_request != START)
+        cout << "\n 🗂️ Request: " << resource_request << " successfully sent ✅\n";
+    else
+    {
+        cout << "\n 🗳️ End of requests, command [ " << resource_request << " ] found \n\n";
+        return;
+    }
 
-    cout << "Send to (" << bytes_send << ") bytes\n";
+    string request    = utils::complete_Bytes(resource_request.size(), 2) + resource_request;
+
+    bytes_send = sendto(sockFD, &(request.front()), request.size(), 0, (SOCK_ADDR*)& server_addr, SOCK_ADDR_SIZE);
 }
 
 // Receivers
-void UDP_Client::recv_Response()
+void UDP_Client::recv_Responses()
 {
-    bytes_recv = recvfrom(sockFD, recv_buffer, 1024, MSG_WAITALL, (SOCK_ADDR *)& server_addr, &addr_len);
     
-    recv_buffer[bytes_recv] = '\0';
-
-    cout << "[ Msg Server ] " << recv_buffer << "\n\n";
 }
 
 // Utilities

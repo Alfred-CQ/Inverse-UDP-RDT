@@ -7,17 +7,18 @@
     {
         public:
            /* Constructors */
-            UDP_Server              (string _ip, uint _port = PORT);
+            UDP_Server              (string _ip, uint _port);
            ~UDP_Server              ();
 
            /** Methods **/
            /* Senders */
-            void send_Response      (string message);
+            void send_Responses     (string resource_name);
 
            /* Receivers */
             void recv_Requests      ();
 
            /* Utilities */
+            bool find_Resource      (string resource_name);
             void print_Information  ();
             
         private:
@@ -36,7 +37,7 @@
             SOCK_ADDR_IN    client_addr;
             socklen_t       addr_len;
 
-            char            recv_buffer[1024];
+            char*           recv_buffer;
     };
         
 #endif // !__UDP_SERVER__

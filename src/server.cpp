@@ -2,7 +2,7 @@
 
 int main()
 {
-    UDP_Server* myServer    { new UDP_Server("127.0.0.1") };
+    UDP_Server* myServer    { new UDP_Server("127.0.0.1", PORT) };
  
     myServer->print_Information();
 
@@ -10,8 +10,7 @@ int main()
 
     while (1)
     {
-        myServer->recv_Requests();
-        myServer->send_Response("Hello");
+        sleep(5);
     }
 
     cout << " 🏁 FINISH UDP SERVER PROGRAM 🏁\n";

@@ -33,30 +33,54 @@ UDP_Server::UDP_Server(string _ip, uint _port)
         if (entry.is_directory() && entry.path().filename() == RESOURCES_DIR)
                 resources_path = string(RESOURCES_DIR) + "/";
     }
+
+    recv_buffer = new char[REQUEST_NAME_SIZE];
+
+    thread(&UDP_Server::recv_Requests, this).detach();
 }
 
 /* Methods */
 // Senders
-void UDP_Server::send_Response(string message)
+void UDP_Server::send_Responses(string resource_name)
 {
-    sendto(sockFD, &(message.front()), message.size(), MSG_CONFIRM, (SOCK_ADDR*)& client_addr, addr_len);
 
-    cout << message << " message sent.\n\n";
-
-    cout.flush();
 }
 
 // Receivers
 void UDP_Server::recv_Requests()
 {
-    bytes_recv = recvfrom(sockFD, recv_buffer, 1024, MSG_WAITALL,  (SOCK_ADDR*)& client_addr, &addr_len);
-    recv_buffer[bytes_recv] = '\0';
+    char size_Request[3];
+    string resource_name;
+    
+    while (1)
+    {
+        bytes_recv = recvfrom(sockFD, recv_buffer, REQUEST_NAME_SIZE, 0, (SOCK_ADDR *)& client_addr, &addr_len);
+        
+        strncpy(size_Request, recv_buffer, 2);
 
-    cout << "Received (Client) : " << inet_ntoa(client_addr.sin_addr) << " - " << ntohs(client_addr.sin_port) << "\n";
-    cout << " [ Msg ] " << recv_buffer << endl;
+        resource_name = string(recv_buffer, 2, atoi(size_Request));
+
+        if (find_Resource(resource_name))
+            cout << " Resource " << resource_name << " found ✨ in " << resources_path << " 🗃\n";
+        else
+            cout << " Resource " << resource_name << " not found 🚫\n";
+
+        bytes_recv = 0;
+    }
 }
 
 // Utilities
+bool UDP_Server::find_Resource(string resource_name)
+{
+    for (const auto & entry : fs::directory_iterator(resources_path))
+    {
+        if ( entry.path().filename() == resource_name )
+            return true;
+    }
+
+    return false;
+}
+
 void UDP_Server::print_Information()
 {   
     system("clear");
