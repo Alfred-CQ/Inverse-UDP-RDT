@@ -16,12 +16,12 @@ BIN_DIR     = ./bin
 INCLUDE_DIR	=. ./include
 
 # CPP, Sources, Dependencies and Object files
-CPP_LIST_CLIENT = client.cpp udp_client.cpp
+CPP_LIST_CLIENT = client.cpp udp_client.cpp message.cpp
 SRC_LIST_CLIENT = $(patsubst %.cpp,$(SRC_DIR)/%.cpp,$(CPP_LIST_CLIENT))
 OBJ_LIST_CLIENT = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC_LIST_CLIENT))
 DEP_LIST_CLIENT = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.d,$(SRC_LIST_CLIENT))
 
-CPP_LIST_SERVER = server.cpp udp_server.cpp
+CPP_LIST_SERVER = server.cpp udp_server.cpp message.cpp
 SRC_LIST_SERVER = $(patsubst %.cpp,$(SRC_DIR)/%.cpp,$(CPP_LIST_SERVER))
 OBJ_LIST_SERVER = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC_LIST_SERVER))
 DEP_LIST_SERVER = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.d,$(SRC_LIST_SERVER))

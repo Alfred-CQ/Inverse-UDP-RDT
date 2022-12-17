@@ -63,7 +63,7 @@ typedef vector<string>      RESOURCES;
 #define REQUEST_NAME_SIZE   102
 #define PADDING_SIZE        3
 
-#define NUMBER_STREAMS      9
+#define NUMBER_STREAMS      10
 
 #define HEAD_MESSAGES       3
 #define TAIL_MESSAGES       3    
@@ -78,5 +78,9 @@ typedef vector<string>      RESOURCES;
 // Directories
 #define RESOURCES_DIR       "resources"
 #define REQUESTS_DIR        "requests"
+
+// States
+#define AVAILABLE           true
+#define UNAVAILABLE         false
 
 #endif // !__MAIN_HEADER_H__

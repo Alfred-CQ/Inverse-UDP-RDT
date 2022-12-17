@@ -12,7 +12,7 @@
 
            /** Methods **/
            /* Senders */
-            void send_Responses     (string resource_name);
+            void send_Response      (string resource_name);
 
            /* Receivers */
             void recv_Requests      ();
@@ -24,6 +24,7 @@
         private:
            /* Variables */
             uint            port;
+            uint            stream;
             
             int             sockFD;
             int             bytes_recv;

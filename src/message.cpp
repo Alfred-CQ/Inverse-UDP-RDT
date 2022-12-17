@@ -32,10 +32,38 @@ void Response::send_Segment(uint sequence_number)
             MSG_CONFIRM, addr_destination, SOCK_ADDR_SIZE );
 }
 
+void Response::build_Response(string folder)
+{
+    cout << "************************************************************\n"
+                 << "      📬 Resource received in stream " << stream << endl;
+
+    ofstream out_file (folder + "/" + resource_name);
+
+    for (auto it = resource_segments.begin(); it != resource_segments.end(); ++it)
+        out_file << (it->second)->data << "\n";
+
+    cout << "************************************************************\n";
+}
+
 // Getters
 Segment* Response::get_Segment(uint sequence_number)
 {
     return resource_segments[sequence_number];
+}
+
+uint Response::get_Stream()
+{
+    return stream;
+}
+
+uint Response::get_Numb_Segments()
+{
+    return number_segments;
+}
+
+uint Response::get_Counter()
+{
+    return this->resource_segments.size();
 }
 
 // Setters
@@ -65,8 +93,8 @@ void Response::print_Tail(uint _number_segments)
 
     if (_number_segments <= resource_segments.size())
     {
-        for (size_t i = 0; i < _number_segments; ++i)
-        --segment_it;
+        for (size_t i = 1; i < _number_segments; ++i)
+            --segment_it;
     }
     
     print_Segments(segment_it, _number_segments, "TAIL");

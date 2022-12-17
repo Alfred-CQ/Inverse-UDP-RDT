@@ -2,6 +2,7 @@
     #define __UDP_CLIENT__
 
     #include "main_header.h"
+    #include "message.h"
 
     class UDP_Client
     {
@@ -22,16 +23,21 @@
 
         private:
            /* Variables */
-            uint            port;
+            uint                port;
 
-            int             sockFD;
-            int             bytes_send;
+            int                 sockFD;
+            int                 bytes_recv;
+            int                 bytes_send;
             
-            SOCK_ADDR_IN    server_addr;
-            HOST*           host;
-            socklen_t       addr_len;
+            SOCK_ADDR_IN        server_addr;
+            HOST*               host;
+            socklen_t           addr_len;
 
-            char*           recv_buffer;
+            char*               recv_buffer;
+
+            vector<bool>        streams_status;
+            vector<Response*>   streams;
+            RESOURCES           resource_names;
     };
 
 #endif // !__UDP_CLIENT__
