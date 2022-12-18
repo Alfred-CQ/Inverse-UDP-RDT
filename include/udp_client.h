@@ -39,6 +39,9 @@
             vector<bool>        streams_status;
             vector<Response*>   streams;
             RESOURCES           resource_names;
+
+            string              current_path;
+            string              requests_path;
     };
 
 #endif // !__UDP_CLIENT__

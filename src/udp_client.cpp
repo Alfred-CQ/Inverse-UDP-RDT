@@ -23,6 +23,15 @@ UDP_Client::UDP_Client(string _ip_server, uint _port)
 
     bzero(&(server_addr.sin_zero), 8);
 
+    current_path   = fs::current_path();
+    requests_path  = "../" + string(REQUESTS_DIR) + "/";
+
+    for (const auto & entry : fs::directory_iterator(current_path))
+    {
+        if (entry.is_directory() && entry.path().filename() == REQUESTS_DIR)
+                requests_path = string(REQUESTS_DIR) + "/";
+    }
+
     thread(&UDP_Client::recv_Responses, this).detach();
 }
 
@@ -53,8 +62,8 @@ void UDP_Client::send_Request(string resource_request)
 
 void UDP_Client::resend_Request(uint stream, uint sequence_number)
 {
-    cout << " ⚠️ Error in cheksum re-requesting segment " << sequence_number << " in stream " << stream << endl;
-
+    cout << " 🚨 Error in cheksum, re-requesting segment " << sequence_number << " in stream " << stream << endl;
+    
     string resend_request = utils::complete_Bytes(0, 2) + 
                             std::to_string(stream) +
                             std::to_string(sequence_number);
@@ -105,7 +114,9 @@ void UDP_Client::recv_Responses()
 
         /***** Testing *******/
         if (i == 0)
+        {
             data[0] = '/'; data[1] = '-'; data[5] = '@';
+        }
         /*********************/
 
         if (utils::test_Checksum(data, atoi(&(str_checksum.front()))))
@@ -121,7 +132,7 @@ void UDP_Client::recv_Responses()
 
         if (streams[current_stream]->get_Counter() == streams[current_stream]->get_Numb_Segments())
         {
-            streams[current_stream]->build_Response(REQUESTS_DIR);
+            streams[current_stream]->build_Response(requests_path);
             streams_status[current_stream] = AVAILABLE;
         }
 
@@ -139,7 +150,10 @@ void UDP_Client::print_Information()
     cout << "         ░░█▀▀░█░░░▀█▀░█▀▀░█▀█░▀█▀░░░█░█░█▀▄░█▀█░░\n" 
          << "         ░░█░░░█░░░░█░░█▀▀░█░█░░█░░░░█░█░█░█░█▀▀░░\n"
          << "         ░░▀▀▀░▀▀▀░▀▀▀░▀▀▀░▀░▀░░▀░░░░▀▀▀░▀▀░░▀░░░░\n"
-         << "************************************************************\n"
-         << "                PORT          : " << port
+         << "******************************************************\n"
+          << "          HOST          : " << host << "\n"
+         << "           PORT          : " << port
+         << "           REQUESTS_PATH : " << requests_path << "\n"
+         << "******************************************************"
          << endl;
 }

@@ -4,6 +4,7 @@ LD          = g++
 CCFLAGS     = -Wall -Wextra -std=c++17
 OPT			= -O0
 DEPFLAGS    = -MP -MD
+THREADS		= -pthread
 
 # Programs
 PROG_CLIENT	= client
@@ -41,12 +42,12 @@ all: $(BIN_DIR)/$(PROG_CLIENT) $(BIN_DIR)/$(PROG_SERVER)
 
 $(BIN_DIR)/$(PROG_CLIENT): $(OBJ_LIST_CLIENT)
 	@echo "Linking the target $(PROG_CLIENT) in $(BIN_DIR)"
-	$(LD) -o $@ $^
+	$(LD) -o $@ $^ $(THREADS)
 	@echo ""
 
 $(BIN_DIR)/$(PROG_SERVER): $(OBJ_LIST_SERVER)
 	@echo "Linking the target $(PROG_CLIENT) in $(BIN_DIR)"
-	$(LD) -o $@ $^
+	$(LD) -o $@ $^ $(THREADS)
 	@echo ""
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp

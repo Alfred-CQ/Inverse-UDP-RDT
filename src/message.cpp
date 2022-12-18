@@ -42,6 +42,9 @@ void Response::build_Response(string folder)
     for (auto it = resource_segments.begin(); it != resource_segments.end(); ++it)
         out_file << (it->second)->data << "\n";
 
+    print_Head();
+    print_Tail();
+
     cout << "************************************************************\n";
 }
 
