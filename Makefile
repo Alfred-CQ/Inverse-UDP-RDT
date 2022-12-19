@@ -4,6 +4,7 @@ LD          = g++
 CCFLAGS     = -Wall -Wextra -std=c++17
 OPT			= -O0
 DEPFLAGS    = -MP -MD
+THREADS		= -pthread
 
 # Programs
 PROG_CLIENT	= client
@@ -16,12 +17,12 @@ BIN_DIR     = ./bin
 INCLUDE_DIR	=. ./include
 
 # CPP, Sources, Dependencies and Object files
-CPP_LIST_CLIENT = client.cpp
+CPP_LIST_CLIENT = client.cpp udp_client.cpp message.cpp
 SRC_LIST_CLIENT = $(patsubst %.cpp,$(SRC_DIR)/%.cpp,$(CPP_LIST_CLIENT))
 OBJ_LIST_CLIENT = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC_LIST_CLIENT))
 DEP_LIST_CLIENT = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.d,$(SRC_LIST_CLIENT))
 
-CPP_LIST_SERVER = server.cpp
+CPP_LIST_SERVER = server.cpp udp_server.cpp message.cpp
 SRC_LIST_SERVER = $(patsubst %.cpp,$(SRC_DIR)/%.cpp,$(CPP_LIST_SERVER))
 OBJ_LIST_SERVER = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SRC_LIST_SERVER))
 DEP_LIST_SERVER = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.d,$(SRC_LIST_SERVER))
@@ -41,12 +42,12 @@ all: $(BIN_DIR)/$(PROG_CLIENT) $(BIN_DIR)/$(PROG_SERVER)
 
 $(BIN_DIR)/$(PROG_CLIENT): $(OBJ_LIST_CLIENT)
 	@echo "Linking the target $(PROG_CLIENT) in $(BIN_DIR)"
-	$(LD) -o $@ $^
+	$(LD) -o $@ $^ $(THREADS)
 	@echo ""
 
 $(BIN_DIR)/$(PROG_SERVER): $(OBJ_LIST_SERVER)
 	@echo "Linking the target $(PROG_CLIENT) in $(BIN_DIR)"
-	$(LD) -o $@ $^
+	$(LD) -o $@ $^ $(THREADS)
 	@echo ""
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp

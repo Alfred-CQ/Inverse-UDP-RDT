@@ -1,46 +1,40 @@
-#include "../include/resources.h"
+#include "../include/main_header.h"
+#include "../include/udp_client.h"
 
 int main()
 {
-    int sock;
-    struct sockaddr_in server_addr;
-    struct hostent *host;
-    char send_data[1024];
-    char recv_data[1024];
-    int n, bytes_read;
+    UDP_Client* myClient        { new UDP_Client("127.0.0.1", PORT) };
+    string      command         { "Y" };
+    RESOURCES   resource_names;
+    
+    myClient->print_Information();
 
-    host = (struct hostent *)gethostbyname((char *)"127.0.0.1");
-
-    if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) == -1)
+    while (command != "N")
     {
-        perror("socket");
-        exit(1);
+        cout << "************************************************************"
+             << "\n[ -all for all resources ] [ -start to start receiving]\n"
+             << "           Type the resources you need🔎\n";
+
+        while (command != ALL && command != START)
+        {
+            string resource_name;
+
+            cout << "  > "; cin >> resource_name;
+
+            resource_names.push_back(resource_name);
+
+            command = resource_name;
+        }
+
+        for (size_t i = 0; i < resource_names.size(); ++i)
+            myClient->send_Request(resource_names[i]);
+
+        cout << "Would like to retry? (Y/N)" << endl; cin >> command;
+
+        resource_names.clear();
     }
 
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(5000);
-    server_addr.sin_addr = *((struct in_addr *)host->h_addr);
-    bzero(&(server_addr.sin_zero), 8);
-
-    socklen_t addr_len = sizeof(struct sockaddr);
-
-    while (1)
-    {
-        cout << "Type Something (q or Q to quit): ";
-        fgets(send_data, 1024, stdin);
-
-        if ((strcmp(send_data, "q\n") == 0) || strcmp(send_data, "Q\n") == 0)
-            break;
-
-        n = sendto(sock, send_data, strlen(send_data), 0, (struct sockaddr *)&server_addr, sizeof(struct sockaddr));
-
-        cout << "Send to (" << n << ") bytes\n";
-
-        bytes_read = recvfrom(sock, recv_data, 1024, MSG_WAITALL, (struct sockaddr *)&server_addr, &addr_len);
-        recv_data[bytes_read] = '\0';
-
-        cout << "[ Msg Server ] " << recv_data << "\n\n";
-    }
+    cout << " 🏁 FINISH UDP CLIENT PROGRAM 🏁\n";
 
     return 0;
 }
