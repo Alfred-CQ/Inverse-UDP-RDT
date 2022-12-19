@@ -56,6 +56,7 @@ typedef vector<string>      RESOURCES;
 // Sizes
 #define MAX_MESSAGE_SIZE    1024
 #define MAX_DATA_SIZE       10
+#define CHAR_BITS_SIZE      8
 
 #define MIN_MESSAGE_SIZE    0
 
