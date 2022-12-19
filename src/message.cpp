@@ -15,7 +15,7 @@ Response::Response(string _resource_name, uint _stream, uint _number_segments)
 void Response::insert_Segment(uint _sequence_number, uint _padding, char* _data)
 {
     string data { _data };
-    Segment* segment = new Segment(_padding, utils::make_Checksum(data), data);
+    Segment* segment = new Segment(_padding, CRC::encode(string(data)), data);
 
     resource_segments.insert({_sequence_number, segment});
 }
@@ -117,7 +117,7 @@ void Response::print_Tail(uint _number_segments)
 void Response::print_Segments(map<uint, Segment*>::iterator segment_it, uint _number_segments, string title)
 {
     cout << "***********************" << title << "****************************\n"
-         << "* S | SEQUENCE # | MESSAGE # | PADDING |   DATA   | CKV *\n";
+         << "* S | SEQUENCE # | MESSAGE # | PADDING |   DATA   | CRC12 *\n";
 
     if (_number_segments > resource_segments.size())
         print_One_Segment( segment_it->first );
@@ -135,5 +135,5 @@ void Response::print_One_Segment(uint _sequence_number)
     cout << "|"  << "   " << setfill ('0') << setw (5) << number_segments << setfill (' ') << setw(4);
     cout << "|"  << "   " << resource_segments[_sequence_number]->padding_str << setw (4);
     cout << "|"  << " " << resource_segments[_sequence_number]->data.substr(0,8) << " ";
-    cout << "|  " << resource_segments[_sequence_number]->checksum_str << "  |" << setfill(' ') << endl;
+    cout << "| " << resource_segments[_sequence_number]->checksum_str << " |" << setfill(' ') << endl;
 }

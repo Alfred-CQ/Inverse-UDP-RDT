@@ -75,8 +75,12 @@ void UDP_Client::resend_Request(uint stream, uint sequence_number, string type)
 void UDP_Client::recv_Responses()
 {
     char ch_stream;
-    uint current_stream;   
+    uint current_stream, select_stream{NUMBER_STREAMS + 1};
+    bool open_stream = false;
 
+    auto start = std::chrono::system_clock::now();
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<float,std::milli> duration;
     /***** Testing *******/
     uint i = 0;
     /*********************/
@@ -85,9 +89,36 @@ void UDP_Client::recv_Responses()
         bytes_recv = recvfrom(sockFD, recv_buffer, MAX_MESSAGE_SIZE, MSG_WAITALL, (SOCK_ADDR *)& server_addr, &addr_len);
         recv_buffer[bytes_recv] = '\0';
 
-        // Stream
+        // Streams operations
         ch_stream = recv_buffer[0];
         current_stream = atoi(&ch_stream);
+
+        if (!open_stream)
+        {
+            for (size_t i = 0; i < streams_status.size(); ++i)
+            {
+                if (streams_status[i] == UNAVAILABLE)
+                {
+                    select_stream = i;
+                    open_stream = true;
+                    start = std::chrono::system_clock::now();
+                    break;
+                }
+            }
+            delay_value = 100;
+        }
+
+        if (select_stream == current_stream)
+        {
+            end = std::chrono::system_clock::now();
+            duration = end - start;
+            start = std::chrono::system_clock::now();
+
+            delay_value = uint(EWMA::get_next_value(duration.count()*10));
+            if (delay_value == 0) delay_value = 100;
+        }    
+
+        cout << "  ⌛ Delay: " << duration.count()*10 << " - 📈 EWMA: " << delay_value << endl;
 
         // # Sequence Number
         string str_sequence_number(recv_buffer, 1, 5);
@@ -100,7 +131,7 @@ void UDP_Client::recv_Responses()
         string data(recv_buffer, 14, MAX_DATA_SIZE);
 
         // Checksum
-        string str_checksum(recv_buffer, MAX_DATA_SIZE + 14, 1);
+        string str_checksum(recv_buffer, MAX_DATA_SIZE + 14, 5);
 
         // Assigning a stream
         if (streams_status[current_stream] == AVAILABLE)
@@ -111,17 +142,19 @@ void UDP_Client::recv_Responses()
                                                     current_stream, 
                                                     atoi(&(number_segments.front())));
 
-            streams_status[current_stream] = UNAVAILABLE;                                  
+            streams_status[current_stream] = UNAVAILABLE;                             
         }
 
         /***** Testing *******/
-        if (i == 0)
+        if (i == 3)
         {
-            data[0] = '/'; data[1] = '-'; data[5] = '@';
+            char _data = data[0]; data[0] = data[1]; data[1] = _data;
+                 _data = data[4]; data[4] = data[5]; data[5] = _data;
+                 _data = data[3]; data[3] = data[9]; data[9] = _data;
         }
         /*********************/
         
-        if (utils::test_Checksum(data, atoi(&(str_checksum.front()))))
+        if (CRC::decode(data, atoi(&(str_checksum.front()))) == 0)
         {
             /***** Testing *******/
             if (i != 5 )
@@ -129,16 +162,21 @@ void UDP_Client::recv_Responses()
             streams[current_stream]->insert_Segment(sequence_number, 
                                                     atoi(&(padding.front())), 
                                                     &(data.front()));
+
+            thread(&UDP_Client::time_Out, this, current_stream, sequence_number + 1).detach();
         }
         else
+        {
+            thread(&UDP_Client::time_Out, this, current_stream, sequence_number).detach();
             resend_Request(streams[current_stream]->get_Stream(), sequence_number, "checksum");
-
-        thread(&UDP_Client::time_Out, this, current_stream, sequence_number + 1).detach();
-
+        }
+        
         if (streams[current_stream]->get_Counter() == streams[current_stream]->get_Numb_Segments())
         {
             streams[current_stream]->build_Response(requests_path);
             streams_status[current_stream] = AVAILABLE;
+
+            open_stream = (current_stream != select_stream);
         }
 
         /***** Testing *******/
@@ -160,7 +198,7 @@ void UDP_Client::time_Out(uint stream, uint sequence_number)
 
     while (!streams[stream]->find_Segment(sequence_number))
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+        std::this_thread::sleep_for(std::chrono::milliseconds(delay_value));
         
         cout << " ⏰ Timeout! in " << stream << " and sequence #" << sequence_number;
         

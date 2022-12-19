@@ -72,16 +72,15 @@
 
     namespace EWMA
     {
-        std::vector<double> history(1, 0.0);
-        int cur_idx = 1;
+        static inline std::vector<uint> history(1, 0.0);
+        static inline int cur_idx = 1;
         const double beta = 0.2;
 
-        double get_next_value(double actual_value)
+        static inline double get_next_value(double actual_value)
         {
             history.push_back(beta*history[cur_idx - 1] + (1-beta)*actual_value);
             return history[cur_idx++];
         }
-
     }
 
     namespace CRC
@@ -90,37 +89,37 @@
         const std::vector<bool> generator = {true, false, false, false, false, false, false, false, false, true, false, true, true};
         const std::vector<bool> null_divisor = {false, false, false, false, false, false, false, false, false, false, false, false, false};
 
-        std::vector<bool> XOR(const std::vector<bool> &one, const std::vector<bool> &two)
+        static inline std::vector<bool> XOR(const std::vector<bool> &one, const std::vector<bool> &two)
         {
             std::vector<bool> ans;
-            for (int i = 1; i < two.size(); i++)
+            for (size_t i = 1; i < two.size(); i++)
             {
                 ans.push_back(one[i] ^ two[i]);
             }
             return ans;
         }
 
-        void append_zeros(std::vector<bool> &data)
+        static inline void append_zeros(std::vector<bool> &data)
         {
-            for (int i = 0; i < r; i++)
+            for (size_t i = 0; i < r; i++)
             {
                 data.push_back(false);
             }
         }
 
-        void append_vector(std::vector<bool> &data, const std::vector<bool> &to_append)
+        static inline void append_vector(std::vector<bool> &data, const std::vector<bool> &to_append)
         {
-            for (int i = 0; i < to_append.size(); i++)
+            for (size_t i = 0; i < to_append.size(); i++)
             {
                 data.push_back(to_append[i]);
             }
         }
 
-        std::vector<bool> to_boolean(char character)
+        static inline std::vector<bool> to_boolean(char character)
         {
             std::vector<bool> ans;
             int idx = (int)character;
-            for (int i = 0; i < CHAR_BITS_SIZE; i++)
+            for (size_t i = 0; i < CHAR_BITS_SIZE; i++)
             {
                 int mask = 1 << i;
                 ans.push_back(idx & mask);
@@ -128,17 +127,17 @@
             return ans;
         }
 
-        std::vector<bool> to_dividend(std::string data)
+        static inline std::vector<bool> to_dividend(std::string data)
         {
             std::vector<bool> dividend;
-            for (int i = 0; i < data.size(); i++)
+            for (size_t i = 0; i < data.size(); i++)
             {
                 append_vector(dividend, to_boolean(data[i]));
             }
             return dividend;
         }
 
-        std::vector<bool> divide(const std::vector<bool> &dividend, const std::vector<bool> &divisor)
+        static inline std::vector<bool> divide(const std::vector<bool> &dividend, const std::vector<bool> &divisor)
         {
             int cur_top = divisor.size();
             int dividend_size = dividend.size();
@@ -166,10 +165,10 @@
             return chunk;
         }
 
-        int get_key(const std::vector<bool> &remainder)
+        static inline int get_key(const std::vector<bool> &remainder)
         {
             int ans = 0;
-            for (int i = 0; i < remainder.size(); i++)
+            for (size_t i = 0; i < remainder.size(); i++)
             {
                 if (remainder[i])
                     ans += (1 << i);
@@ -177,10 +176,10 @@
             return ans;
         }
 
-        std::vector<bool> get_booleans(const int key)
+        static inline std::vector<bool> get_booleans(const int key)
         {
             std::vector<bool> ans;
-            for(int i = 0; i < r; i++)
+            for(size_t i = 0; i < r; i++)
             {
                 int mask = 1 << i;
                 if(mask & key) ans.push_back(true);
@@ -189,14 +188,15 @@
             return ans;
         }
 
-        int encode(std::string data)
+        static inline uint encode(std::string data)
         {
             std::vector<bool> dividend = CRC::to_dividend(data);
             append_zeros(dividend);
             std::vector<bool> remainder = CRC::divide(dividend, CRC::generator);
             return CRC::get_key(remainder);
         }
-        int decode(std::string data, const int key)
+
+        static inline uint decode(std::string data, const int key)
         {
             std::vector<bool> dividend = CRC::to_dividend(data);
             std::vector<bool> tail = CRC::get_booleans(key);
@@ -204,7 +204,6 @@
             std::vector<bool> remainder = CRC::divide(dividend, CRC::generator);
             return CRC::get_key(remainder);
         }
-
     }
 
 #endif // !__UTILS_H__

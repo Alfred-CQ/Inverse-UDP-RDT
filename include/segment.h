@@ -14,7 +14,7 @@
        /* Constructors and Destructor */
         Segment (uint _padding, uint _checksum, string _data) : padding_str (utils::complete_Bytes(_padding, PADDING_SIZE)),
                                                                 data        (_data),
-                                                                checksum_str(std::to_string(_checksum))
+                                                                checksum_str(utils::complete_Bytes(_checksum, 5))
                                                                 {}
        ~Segment ();
     };

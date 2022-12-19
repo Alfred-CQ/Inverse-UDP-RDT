@@ -28,6 +28,7 @@
         private:
            /* Variables */
             uint                port;
+            uint                delay_value;
 
             int                 sockFD;
             int                 bytes_recv;
