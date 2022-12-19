@@ -22,12 +22,14 @@
             uint     get_Stream         ();
             uint     get_Numb_Segments  ();
             uint     get_Counter        ();
+            uint     get_end            ();
 
            // Setters
             void set_Source         (int _source_sockFD);
             void set_Destination    (sockaddr* _addr_destination);
 
            // Utils
+            bool find_Segment       (uint sequence_number);
             void print_Head         (uint _number_segments = HEAD_MESSAGES);
             void print_Tail         (uint _number_segments = TAIL_MESSAGES);
             void print_Segments     ( map<uint, Segment*>::iterator segment_it, 
@@ -42,6 +44,7 @@
 
             uint                    stream;
             uint                    number_segments;
+            uint                    end_sequence_number;
 
             string                  resource_name;
 

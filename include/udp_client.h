@@ -14,10 +14,13 @@
            /** Methods **/
            /* Senders */
             void send_Request       (string resource_request);
-            void resend_Request     (uint stream, uint sequence_number);
+            void resend_Request     (uint stream, uint sequence_number, string type);
 
            /* Receivers */
             void recv_Responses     ();
+
+           /* RDT */
+            void time_Out           (uint stream, uint sequence_number);
 
            /* Utilities */
             void print_Information  ();

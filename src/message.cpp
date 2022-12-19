@@ -7,6 +7,7 @@ Response::Response(string _resource_name, uint _stream, uint _number_segments)
     resource_name   = _resource_name;
     stream          = _stream;
     number_segments = _number_segments;
+    end_sequence_number   = _number_segments + 10;
 }
 
 /* Methods */
@@ -69,6 +70,11 @@ uint Response::get_Counter()
     return this->resource_segments.size();
 }
 
+uint Response::get_end()
+{
+    return end_sequence_number;
+}
+
 // Setters
 void Response::set_Source(int _source_sockFD)
 {
@@ -81,6 +87,11 @@ void Response::set_Destination(sockaddr* _addr_destination)
 }
 
 // Utils
+bool Response::find_Segment(uint sequence_number)
+{
+    return (resource_segments.find(sequence_number) != resource_segments.end());
+}
+
 void Response::print_Head(uint _number_segments)
 {
     auto segment_it = resource_segments.begin();

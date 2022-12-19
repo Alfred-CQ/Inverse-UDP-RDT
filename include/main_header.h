@@ -69,6 +69,8 @@ typedef vector<string>      RESOURCES;
 #define HEAD_MESSAGES       3
 #define TAIL_MESSAGES       3    
 
+#define MAX_ATTEMPS         3
+
 // Connection
 #define PORT                5000
 
